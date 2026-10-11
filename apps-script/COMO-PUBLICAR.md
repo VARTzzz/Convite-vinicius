@@ -46,3 +46,11 @@ O URL continua o mesmo.
 | Reservas | O site | Quem reservou o quê e quantas unidades. Para liberar uma reserva, apague a linha ou troque a Situação para "cancelada" |
 | Confirmações | O site | Quem vai, quem não vai, acompanhantes e recados |
 | Configuração | Você | Endereço, bairro, cidade, data e nome do local (este só aparece para quem confirma presença) |
+
+## Relatório do anfitrião
+
+A página `relatorio.html` mostra presença, recados e a porcentagem de presentes garantidos, sem dizer o que cada um vai dar. Ela só abre com a chave que fica na linha "Chave do relatório" da aba Configuração, no formato:
+
+`https://vartzzz.github.io/Convite-vinicius/relatorio.html#k=SUA_CHAVE`
+
+Se o link vazar, troque a chave na planilha (letras e números, no mínimo 20) e o link antigo para de funcionar.

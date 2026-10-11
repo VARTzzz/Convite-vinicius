@@ -62,6 +62,9 @@ function executar_(p) {
   if (acao === 'dados') {
     return montarResposta_(obterDados_(), codigo_(p.codigo, false));
   }
+  if (acao === 'relatorio') {
+    return relatorio_(p.chave);
+  }
 
   const codigo = codigo_(p.codigo, true);
   return comTrava_(() => {
@@ -165,6 +168,58 @@ function linhaNova_(aba, col, valores) {
     if (col[campo] >= 0) linha[col[campo]] = valores[campo];
   });
   return linha;
+}
+
+/**
+ * Relatório para o anfitrião: presença, recados e a porcentagem de presentes.
+ * Só responde com a chave da aba Configuração ("Chave do relatório").
+ * Nunca diz quais itens foram reservados nem por quem.
+ */
+function relatorio_(chave) {
+  const dados = obterDados_();
+  const esperada = campo_(dados.config, 'chave do relatorio');
+  if (!esperada || esperada.length < 20 || String(chave || '').trim() !== esperada) {
+    throw erro_('chave_invalida', 'Esse link de relatório não é válido.');
+  }
+
+  const conf = tabela_(ABAS.confirmacoes);
+  const col = colunas_(conf.cabecalho, {
+    data: 'data',
+    nome: 'nome',
+    resposta: 'resposta',
+    acompanhantes: 'acompanhantes',
+    recado: 'recado',
+  });
+  const respostas = conf.linhas
+    .map((l) => ({
+      linha: l.linha,
+      data: col.data >= 0 ? String(l.valores[col.data] || '') : '',
+      nome: String(l.valores[col.nome] || '').trim(),
+      vai: normalizar_(l.valores[col.resposta]) === 'vou',
+      acompanhantes: Math.max(0, parseInt(l.valores[col.acompanhantes], 10) || 0),
+      recado: col.recado >= 0 ? String(l.valores[col.recado] || '').trim() : '',
+    }))
+    .filter((r) => r.nome);
+
+  const vao = respostas.filter((r) => r.vai);
+  const unidades = dados.itens.reduce((t, i) => t + i.quantidade, 0);
+  const porItem = {};
+  dados.reservas.forEach((r) => {
+    if (r.ativa) porItem[r.id] = (porItem[r.id] || 0) + r.quantidade;
+  });
+  const reservadas = dados.itens.reduce((t, i) => t + Math.min(i.quantidade, porItem[i.id] || 0), 0);
+
+  return {
+    evento: { data: campo_(dados.config, 'data') },
+    presenca: {
+      vao: vao.length,
+      acompanhantes: vao.reduce((t, r) => t + r.acompanhantes, 0),
+      totalPessoas: vao.reduce((t, r) => t + 1 + r.acompanhantes, 0),
+      naoVao: respostas.length - vao.length,
+    },
+    presentes: { total: unidades, reservados: reservadas },
+    respostas: respostas,
+  };
 }
 
 // ---------------------------------------------------------------------------

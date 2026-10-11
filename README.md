@@ -11,6 +11,7 @@ O site tem o convite, a contagem regressiva, a lista de presentes com reserva (s
 
 ```
 index.html                  página única do convite
+relatorio.html              relatório secreto do anfitrião (abre só com a chave da planilha)
 assets/css/style.css        visual (cores e fontes ficam nas variáveis do :root)
 assets/js/config.js         endereço da planilha (API_URL) e data padrão
 assets/js/api.js            conversa com a planilha e modo demonstração
