@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Prévia do WhatsApp</title>
+<link rel="stylesheet" href="../assets/css/style.css">
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #0f2e22; }
+  .og { position: relative; width: 1200px; height: 630px; overflow: hidden; color: var(--areia);
+    background: radial-gradient(60% 70% at 78% 40%, rgba(63,191,181,.22), transparent 70%),
+                radial-gradient(70% 60% at 10% 90%, rgba(242,181,68,.14), transparent 70%),
+                linear-gradient(180deg, #0c271d, #0f2e22 50%, #12382a); }
+  .og .varal { height: 84px; }
+  .folha { position: absolute; width: 380px; height: 418px; color: #1d5039; transform-origin: 50% 95%; }
+  .f1 { left: -120px; top: 250px; transform: rotate(60deg); }
+  .f2 { left: 520px; top: -190px; transform: rotate(-170deg); color: #18492f; }
+  .f3 { right: -150px; top: 120px; transform: rotate(-70deg); color: #1a4b35; }
+  .texto { position: absolute; left: 78px; top: 118px; width: 760px; }
+  .selo { font-size: 20px; padding: 9px 18px 9px 12px; }
+  .selo svg { width: 26px; height: 26px; }
+  h1 { margin: 22px 0 20px; font-size: 92px; font-weight: 800; font-stretch: 82%; line-height: .92; letter-spacing: -.045em; }
+  h1 em { font-family: var(--fonte-script); font-style: normal; font-weight: 400; color: var(--coral); font-size: .95em; letter-spacing: -.01em; }
+  .data { font-size: 30px; font-weight: 800; color: var(--mostarda); letter-spacing: -.01em; }
+  .sub { margin-top: 10px; font-size: 24px; color: rgba(251,244,230,.8); }
+  .fig { position: absolute; right: 64px; bottom: 22px; width: 350px; filter: drop-shadow(0 26px 30px rgba(0,0,0,.4)); z-index: 2; }
+  .onda { position: absolute; left: 0; width: 100%; animation: none; }
+  .o1 { bottom: 0; height: 86px; fill: var(--turquesa); z-index: 1; }
+  .o2 { bottom: -1px; height: 44px; fill: var(--areia); z-index: 3; }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <mask id="monstera-cortes" maskUnits="userSpaceOnUse" x="0" y="0" width="200" height="220">
+      <rect width="200" height="220" fill="#fff"/>
+      <g fill="#000">
+        <path d="M24 50 L88 94 L13 66 Z"/><path d="M6 84 L87 124 L3 102 Z"/><path d="M2 121 L87 152 L5 139 Z"/><path d="M12 160 L88 176 L26 178 Z"/>
+        <path d="M176 50 L112 94 L187 66 Z"/><path d="M194 84 L113 124 L197 102 Z"/><path d="M198 121 L113 152 L195 139 Z"/><path d="M188 160 L112 176 L174 178 Z"/>
+        <ellipse cx="66" cy="104" rx="8" ry="3.4" transform="rotate(32 66 104)"/><ellipse cx="62" cy="136" rx="9" ry="3.4" transform="rotate(22 62 136)"/>
+        <ellipse cx="134" cy="104" rx="8" ry="3.4" transform="rotate(-32 134 104)"/><ellipse cx="138" cy="136" rx="9" ry="3.4" transform="rotate(-22 138 136)"/>
+      </g>
+    </mask>
+    <symbol id="monstera" viewBox="0 0 200 220">
+      <g mask="url(#monstera-cortes)"><path fill="currentColor" d="M100 190 C70 206 20 196 8 150 C-5 100 15 40 70 15 C86 8 114 8 130 15 C185 40 205 100 192 150 C180 196 130 206 100 190 Z"/></g>
+      <path d="M100 190 C100 200 99 210 96 219" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="hibisco" viewBox="0 0 100 100">
+      <g fill="currentColor">
+        <path d="M50 50 C30 40 28 10 50 6 C72 10 70 40 50 50Z"/><path d="M50 50 C30 40 28 10 50 6 C72 10 70 40 50 50Z" transform="rotate(72 50 50)"/>
+        <path d="M50 50 C30 40 28 10 50 6 C72 10 70 40 50 50Z" transform="rotate(144 50 50)"/><path d="M50 50 C30 40 28 10 50 6 C72 10 70 40 50 50Z" transform="rotate(216 50 50)"/>
+        <path d="M50 50 C30 40 28 10 50 6 C72 10 70 40 50 50Z" transform="rotate(288 50 50)"/>
+      </g>
+      <circle cx="50" cy="50" r="9" fill="#000" opacity=".22"/><path d="M50 50 L66 26" stroke="#f2b544" stroke-width="3" stroke-linecap="round"/><circle cx="67" cy="24" r="4" fill="#f2b544"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="og">
+  <svg class="varal" id="varal" style="width:1200px"></svg>
+  <svg class="folha f1"><use href="#monstera"/></svg>
+  <svg class="folha f2"><use href="#monstera"/></svg>
+  <svg class="folha f3"><use href="#monstera"/></svg>
+  <div class="texto">
+    <p class="selo"><svg class="selo-flor"><use href="#hibisco"/></svg>Chá de casa nova · edição luau</p>
+    <h1>Vinícius<br>tem <em>casa nova.</em></h1>
+    <p class="data">Sábado, 24 de outubro · 15h</p>
+  </div>
+  <img class="fig" src="../assets/img/surfista.webp" alt="">
+  <svg class="onda o1" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 60 C100 20 200 20 300 60 S500 100 600 60 S800 20 900 60 S1100 100 1200 60 V120 H0Z"/></svg>
+  <svg class="onda o2" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0 70 C100 35 200 35 300 70 S500 105 600 70 S800 35 900 70 S1100 105 1200 70 V120 H0Z"/></svg>
+</div>
+<script>
+  // mesmo varal do site, já aceso
+  const svg = document.getElementById('varal'), w = 1200, vaos = 4, lv = w / vaos;
+  let d = '', lamp = [];
+  for (let i = 0; i < vaos; i++) {
+    const x0 = i * lv - (i === 0 ? 10 : 0), x1 = (i + 1) * lv + (i === vaos - 1 ? 10 : 0), cx = (x0 + x1) / 2, cy = 50;
+    d += `M${x0} 4 Q${cx} ${cy} ${x1} 4 `;
+    const n = Math.round(lv / 46);
+    for (let j = 1; j < n; j++) { const t = j / n; lamp.push([(1-t)*(1-t)*x0 + 2*(1-t)*t*cx + t*t*x1, (1-t)*(1-t)*4 + 2*(1-t)*t*cy + t*t*4]); }
+  }
+  svg.setAttribute('viewBox', `0 0 ${w} 84`);
+  svg.innerHTML = `<defs><radialGradient id="h"><stop offset="0" stop-color="#ffd27a" stop-opacity=".95"/><stop offset=".35" stop-color="#ffb84d" stop-opacity=".45"/><stop offset="1" stop-color="#ff9a3d" stop-opacity="0"/></radialGradient></defs><path class="fio" d="${d}"/>` +
+    lamp.map(([x, y]) => `<g class="lampada acesa" transform="translate(${x} ${y})"><circle cx="0" cy="12" r="22" fill="url(#h)"/><rect class="soquete" x="-2.6" y="-1" width="5.2" height="6" rx="1.2"/><ellipse class="bulbo" cx="0" cy="12" rx="5" ry="7"/></g>`).join('');
+</script>
+</body>
+</html>
