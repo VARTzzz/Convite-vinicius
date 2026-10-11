@@ -73,11 +73,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html {
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   scroll-padding-top: 76px;
 }
-html.travado, body.is-loading { overflow: hidden; }
+body.is-loading { overflow: hidden; }
 
 body {
   margin: 0;
@@ -691,7 +692,7 @@ html.lenis, html.lenis body { height: auto; }
    Lista de presentes
    ========================================================================== */
 
-.lista { padding-top: clamp(48px, 9vw, 96px); }
+.lista { padding-top: clamp(48px, 9vw, 96px); overflow-x: clip; }
 
 .recado {
   position: relative;
@@ -1377,7 +1378,7 @@ html.lenis, html.lenis body { height: auto; }
   transition: opacity 0.4s;
 }
 .folha.aberta::backdrop { opacity: 1; }
-.folha:focus { outline: none; }
+.folha:focus, .folha-cartao:focus { outline: none; }
 .folha-fig {
   position: relative;
   z-index: 2;
@@ -1390,6 +1391,7 @@ html.lenis, html.lenis body { height: auto; }
 }
 .folha-cartao {
   position: relative;
+  overscroll-behavior: contain;
   max-height: 86svh;
   overflow-y: auto;
   padding: 12px 22px calc(22px + env(safe-area-inset-bottom));

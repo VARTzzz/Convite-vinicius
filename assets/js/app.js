@@ -221,8 +221,23 @@
   }
 
   function travarRolagem(travar) {
-    document.documentElement.classList.toggle('travado', travar);
+    // No celular a janela bloqueia o toque no fundo (ver 'touchmove' da folha);
+    // mexer no overflow da página faz a barra do navegador aparecer e sumir.
     if (lenis) (travar ? lenis.stop() : lenis.start());
+  }
+
+  /** Rola só o necessário para o item ficar inteiro na tela, entre a barra de abas e o menu. */
+  async function trazerParaVista(el) {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const topoLivre = $('#filtros').getBoundingClientRect().height + 12;
+    const baseLivre = window.innerHeight - 110;
+    if (r.top >= topoLivre && r.bottom <= baseLivre) return;
+    const espaco = baseLivre - topoLivre;
+    const y = r.top + window.scrollY - topoLivre - Math.max(0, (espaco - r.height) / 2);
+    if (lenis) lenis.scrollTo(y, { duration: 0.6 });
+    else window.scrollTo({ top: y, behavior: 'smooth' });
+    await esperar(650);
   }
 
   // ------------------------------------------------------------------------
@@ -942,7 +957,7 @@
           });
           atualizar(false);
         }
-        if (!input.value) setTimeout(() => input.focus(), 350);
+        if (!input.value && window.matchMedia('(pointer: fine)').matches) setTimeout(() => input.focus(), 350);
         form.addEventListener('submit', (ev) => {
           ev.preventDefault();
           confirmarReserva(item, form, qtd);
@@ -965,6 +980,7 @@
     input.closest('.campo').classList.remove('invalido');
     erro.textContent = '';
     API.guardar.gravar('luau.nome', nome);
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     botao.classList.add('carregando');
 
     try {
@@ -975,6 +991,8 @@
       renderizarTudo();
       estado.ocupados.delete(item.id);
       const el = document.querySelector(`.item[data-id="${CSS.escape(item.id)}"]`);
+      await esperar(120);
+      await trazerParaVista(el);
       await animarCarimbo(el, itemPorId(item.id) || item);
       renderizarLista();
       const info = infoCategoria(chave(item.categoria));
@@ -1018,7 +1036,7 @@
     const tl = gsap.timeline();
     tl.fromTo(
       carimbo,
-      { scale: 2.6, opacity: 0, rotation: -28 },
+      { scale: 1.9, opacity: 0, rotation: -24, transformOrigin: '70% 50%' },
       { scale: 1, opacity: 0.92, rotation: -12, duration: 0.42, ease: 'power4.in' }
     )
       .to(el, { x: -5, duration: 0.05, yoyo: true, repeat: 5, ease: 'none' })
@@ -1502,6 +1520,14 @@
     return tl.then();
   }
 
+  folha.addEventListener(
+    'touchmove',
+    (ev) => {
+      const cartao = ev.target.closest && ev.target.closest('.folha-cartao');
+      if (!cartao || cartao.scrollHeight <= cartao.clientHeight) ev.preventDefault();
+    },
+    { passive: false }
+  );
   folha.addEventListener('cancel', (ev) => {
     ev.preventDefault();
     fecharFolha();
