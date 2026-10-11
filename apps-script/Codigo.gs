@@ -7,7 +7,7 @@
  *
  * Abas usadas (os nomes das colunas importam, a ordem não):
  *   Itens          Categoria | Item | Quantidade | Piada | ... | ID
- *   Reservas       Data/hora | ID do item | Item | Nome | Situação | Código
+ *   Reservas       Data/hora | ID do item | Item | Nome | Quantidade | Situação | Código
  *   Confirmações   Data/hora | Nome | Resposta | Acompanhantes | Recado | Código
  *   Configuração   Campo | Valor
  */
@@ -81,6 +81,7 @@ function executar_(p) {
 function reservar_(dados, p, codigo) {
   const id = texto_(p.item, 40);
   const nome = texto_(p.nome, 60);
+  const pedido = Math.max(1, parseInt(p.quantidade, 10) || 1);
   if (!id) throw erro_('dados_invalidos', 'Item não informado.');
   if (!nome) throw erro_('dados_invalidos', 'Diga seu nome para reservar.');
 
@@ -89,8 +90,15 @@ function reservar_(dados, p, codigo) {
 
   const ativas = dados.reservas.filter((r) => r.id === id && r.ativa);
   if (ativas.some((r) => r.codigo === codigo)) return; // já é dessa pessoa
-  if (ativas.length >= item.quantidade) {
+  const restantes = item.quantidade - ativas.reduce((t, r) => t + r.quantidade, 0);
+  if (restantes <= 0) {
     throw erro_('esgotado', 'Alguém foi mais rápido e reservou esse item.');
+  }
+  if (pedido > restantes) {
+    throw erro_(
+      'quantidade_indisponivel',
+      restantes === 1 ? 'Agora só falta 1 unidade desse item.' : 'Agora só faltam ' + restantes + ' unidades desse item.'
+    );
   }
 
   const aba = aba_(ABAS.reservas);
@@ -100,6 +108,7 @@ function reservar_(dados, p, codigo) {
     id: id,
     item: seguro_(item.nome),
     nome: seguro_(nome),
+    quantidade: pedido,
     situacao: 'ativa',
     codigo: codigo,
   };
@@ -229,6 +238,7 @@ function lerPlanilha_(atribuirIds) {
     id: 'id do item',
     item: 'item',
     nome: 'nome',
+    quantidade: 'quantidade',
     situacao: 'situacao',
     codigo: 'codigo',
   });
@@ -239,6 +249,7 @@ function lerPlanilha_(atribuirIds) {
     .map((l) => ({
       linha: l.linha,
       id: String(l.valores[colRes.id] || '').trim(),
+      quantidade: colRes.quantidade >= 0 ? Math.max(1, parseInt(l.valores[colRes.quantidade], 10) || 1) : 1,
       ativa: normalizar_(l.valores[colRes.situacao]) === 'ativa',
       codigo: String(l.valores[colRes.codigo] || '').trim(),
     }))
@@ -284,8 +295,8 @@ function montarResposta_(dados, codigo) {
   const minhas = {};
   dados.reservas.forEach((r) => {
     if (!r.ativa) return;
-    ativas[r.id] = (ativas[r.id] || 0) + 1;
-    if (codigo && r.codigo === codigo) minhas[r.id] = true;
+    ativas[r.id] = (ativas[r.id] || 0) + r.quantidade;
+    if (codigo && r.codigo === codigo) minhas[r.id] = (minhas[r.id] || 0) + r.quantidade;
   });
 
   const itens = dados.itens.map((i) => ({
@@ -296,6 +307,7 @@ function montarResposta_(dados, codigo) {
     quantidade: i.quantidade,
     reservados: Math.min(ativas[i.id] || 0, i.quantidade),
     meu: !!minhas[i.id],
+    minhaQuantidade: minhas[i.id] || 0,
   }));
 
   const vao = dados.confirmacoes.filter((c) => c.vai);

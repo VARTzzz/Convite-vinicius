@@ -33,6 +33,7 @@
     folhaAberta: false,
     revelacaoAnimada: false,
     primeiraLista: true,
+    categoriaAtiva: null,
   };
 
   // ------------------------------------------------------------------------
@@ -47,37 +48,76 @@
     'Abrindo a caixa escrita “diversos”…',
   ];
 
-  const EMOJI_CATEGORIA = {
-    cozinha: '🍳',
-    mesa: '🍽️',
-    banheiro: '🛁',
-    quarto: '🛏️',
-    sala: '🛋️',
-    'limpeza e lavanderia': '🧺',
-    limpeza: '🧺',
-    lavanderia: '🧺',
-    utilidades: '🧰',
-  };
+  const CATEGORIAS = [
+    {
+      prefixo: 'cozinha',
+      emoji: '🍳',
+      curto: 'Cozinha',
+      completa: 'Cozinha completa! Agora o miojo vai ter companhia.',
+      agradece: 'A pia também.',
+    },
+    {
+      prefixo: 'pratos',
+      emoji: '🍽️',
+      curto: 'Pratos e copos',
+      completa: 'Mesa posta! Já dá para chamar as visitas.',
+      agradece: 'A mesa também.',
+    },
+    {
+      prefixo: 'potes',
+      emoji: '🧂',
+      curto: 'Potes',
+      completa: 'Tudo organizado! O armário nunca esteve tão bonito.',
+      agradece: 'O armário também.',
+    },
+    {
+      prefixo: 'eletro',
+      emoji: '⚡',
+      curto: 'Eletroportáteis',
+      completa: 'Eletros garantidos! A tomada está em festa.',
+      agradece: 'A tomada também.',
+    },
+    {
+      prefixo: 'limpeza',
+      emoji: '🧹',
+      curto: 'Limpeza',
+      completa: 'Kit faxina completo! Usar é outra história.',
+      agradece: 'O chão também.',
+    },
+    {
+      prefixo: 'quarto',
+      emoji: '🛏️',
+      curto: 'Quarto',
+      completa: 'Quarto pronto! Boa noite, Vinícius.',
+      agradece: 'O colchão também.',
+    },
+    {
+      prefixo: 'banheiro',
+      emoji: '🚿',
+      curto: 'Banheiro',
+      completa: 'Banheiro completo! Agora dá para tomar banho com dignidade.',
+      agradece: 'O chuveiro também.',
+    },
+    {
+      prefixo: 'sala',
+      emoji: '🛋️',
+      curto: 'Sala',
+      completa: 'Sala montada! O sofá agradece.',
+      agradece: 'O sofá também.',
+    },
+  ];
 
-  const CATEGORIA_COMPLETA = {
-    cozinha: 'Cozinha completa! Agora o miojo vai ter companhia.',
-    mesa: 'Mesa posta! Já dá para chamar as visitas.',
-    banheiro: 'Banheiro completo! Agora dá para tomar banho com dignidade.',
-    quarto: 'Quarto pronto! Boa noite, Vinícius.',
-    sala: 'Sala montada! O sofá agradece.',
-    'limpeza e lavanderia': 'Limpeza garantida! Usar é outra história.',
-    utilidades: 'Ferramentas garantidas! Os quadros tortos já estão com medo.',
-  };
-
-  const AGRADECE = {
-    cozinha: 'A pia também.',
-    mesa: 'A mesa também.',
-    banheiro: 'O chuveiro também.',
-    quarto: 'O colchão também.',
-    sala: 'O sofá também.',
-    'limpeza e lavanderia': 'O chão também.',
-    utilidades: 'A tomada também.',
-  };
+  /** Emoji, nome curto da aba e frases de cada setor (pelo começo do nome). */
+  function infoCategoria(chaveCategoria) {
+    return (
+      CATEGORIAS.find((c) => chaveCategoria.indexOf(c.prefixo) === 0) || {
+        emoji: '🎁',
+        curto: '',
+        completa: 'Setor completo! Vocês são demais.',
+        agradece: 'A casa também.',
+      }
+    );
+  }
 
   const FRASES_CONTAGEM = [
     (d) => `${d} para o Vinícius descobrir que não tem abridor de garrafa.`,
@@ -629,7 +669,14 @@
     const l = livres(i);
     if (l <= 0) return 'Já garantido';
     if (i.quantidade === 1) return 'Disponível';
-    return `${l} de ${i.quantidade} disponíveis`;
+    if (!i.reservados) return `${i.quantidade} unidades`;
+    return `Faltam ${l} de ${i.quantidade}`;
+  }
+
+  function textoMeu(i) {
+    const n = i.minhaQuantidade || 0;
+    if (i.quantidade > 1 && n > 0) return `Você vai dar ${plural(n, 'unidade', 'unidades')}`;
+    return 'Você vai dar esse';
   }
 
   function assinaturaLista(itens) {
@@ -642,20 +689,27 @@
     const itens = (estado.dados && estado.dados.itens) || [];
     const caixa = $('#categorias');
     const assinatura = assinaturaLista(itens);
+    const cats = categoriasDe(itens);
 
     if (assinatura !== assinaturaAtual) {
       assinaturaAtual = assinatura;
       gatilhosLista.forEach((g) => g.kill());
       gatilhosLista = [];
-      const cats = categoriasDe(itens);
+      if (!cats.some((c) => c.id === estado.categoriaAtiva)) {
+        estado.categoriaAtiva = cats.length ? cats[0].id : null;
+      }
+
       caixa.innerHTML = cats
-        .map(
-          (c) => `
-        <section class="categoria" id="${c.id}" data-cat="${escapar(c.chave)}">
+        .map((c) => {
+          const info = infoCategoria(c.chave);
+          return `
+        <section class="categoria" id="${c.id}" data-cat="${escapar(c.chave)}" role="tabpanel"${c.id === estado.categoriaAtiva ? '' : ' hidden'}>
           <header class="categoria-topo">
-            <span class="categoria-emoji" aria-hidden="true">${EMOJI_CATEGORIA[c.chave] || '🎁'}</span>
-            <h3>${escapar(c.nome)}</h3>
-            <span class="categoria-conta"></span>
+            <span class="categoria-emoji" aria-hidden="true">${info.emoji}</span>
+            <div class="categoria-titulos">
+              <h3>${escapar(c.nome)}</h3>
+              <span class="categoria-conta"></span>
+            </div>
           </header>
           <p class="categoria-completa" hidden></p>
           <div class="itens">
@@ -674,34 +728,46 @@
                 </div>
                 <div class="item-meu">
                   <svg class="ic"><use href="#i-presente"/></svg>
-                  <span>Você vai dar esse</span>
+                  <span class="item-meu-texto">Você vai dar esse</span>
                   <button class="link" type="button" data-desfazer><svg class="ic"><use href="#i-desfazer"/></svg>Desfazer</button>
                 </div>
               </article>`
               )
               .join('')}
           </div>
-        </section>`
-        )
+        </section>`;
+        })
         .join('');
 
       $('#chips').innerHTML = cats
-        .map(
-          (c) =>
-            `<button class="chip" type="button" role="tab" data-alvo="${c.id}">` +
-            `<span aria-hidden="true">${EMOJI_CATEGORIA[c.chave] || '🎁'}</span>${escapar(c.nome)}<span class="chip-conta"></span></button>`
-        )
+        .map((c) => {
+          const info = infoCategoria(c.chave);
+          const ativa = c.id === estado.categoriaAtiva;
+          return (
+            `<button class="chip${ativa ? ' ativo' : ''}" type="button" role="tab" aria-selected="${ativa}" aria-controls="${c.id}" data-alvo="${c.id}">` +
+            `<span aria-hidden="true">${info.emoji}</span>${escapar(info.curto || c.nome)}<span class="chip-conta"></span></button>`
+          );
+        })
         .join('');
+      $$('.chip').forEach((chip) => chip.addEventListener('click', () => ativarCategoria(chip.dataset.alvo, true)));
 
-      prepararEspiaoCategorias();
       if (temGsap) {
-        const cards = $$('.item', caixa);
-        gsap.set(cards, { y: 30, opacity: 0 });
+        const primeiros = $$('.categoria:not([hidden]) .item', caixa);
+        gsap.set(primeiros, { y: 30, opacity: 0 });
         gatilhosLista.push(
-          ...ScrollTrigger.batch(cards, {
-            start: 'top 94%',
+          ScrollTrigger.create({
+            trigger: caixa,
+            start: 'top 88%',
             once: true,
-            onEnter: (lote) => gsap.to(lote, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', stagger: 0.06 }),
+            onEnter: () =>
+              gsap.to(primeiros, {
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: 'power3.out',
+                stagger: 0.05,
+                clearProps: 'transform,opacity',
+              }),
           })
         );
         ScrollTrigger.refresh();
@@ -716,27 +782,65 @@
       el.classList.toggle('is-esgotado', livres(i) <= 0);
       if (temGsap && !i.meu && livres(i) > 0) gsap.set($('.carimbo', el), { clearProps: 'all' });
       $('.item-qtd', el).textContent = textoQuantidade(i);
-      const btn = $('[data-reservar]', el);
-      btn.setAttribute('aria-label', `Reservar ${i.nome}`);
+      $('.item-meu-texto', el).textContent = textoMeu(i);
+      $('[data-reservar]', el).setAttribute('aria-label', `Reservar ${i.nome}`);
     });
 
-    // Contagens por categoria
-    categoriasDe(itens).forEach((c) => {
+    // Contagens por setor
+    cats.forEach((c) => {
       const sec = document.getElementById(c.id);
       if (!sec) return;
-      const total = c.itens.reduce((t, i) => t + i.quantidade, 0);
-      const disp = c.itens.reduce((t, i) => t + livres(i), 0);
-      $('.categoria-conta', sec).textContent = disp ? `${disp} ${disp === 1 ? 'livre' : 'livres'}` : 'Tudo garantido';
+      const disponiveis = c.itens.filter((i) => livres(i) > 0).length;
+      $('.categoria-conta', sec).textContent = disponiveis
+        ? `${plural(disponiveis, 'item disponível', 'itens disponíveis')}`
+        : 'Tudo garantido';
       const completa = $('.categoria-completa', sec);
-      completa.hidden = disp > 0;
-      completa.textContent = CATEGORIA_COMPLETA[c.chave] || 'Categoria completa! Vocês são demais.';
+      completa.hidden = disponiveis > 0;
+      completa.textContent = infoCategoria(c.chave).completa;
       const chip = document.querySelector(`.chip[data-alvo="${c.id}"] .chip-conta`);
-      if (chip) chip.textContent = disp;
-      sec.dataset.total = total;
+      if (chip) chip.textContent = disponiveis;
     });
 
     aplicarFiltro();
     atualizarProgresso();
+  }
+
+  function ativarCategoria(id, rolar) {
+    if (!id || !document.getElementById(id)) return;
+    const mudou = estado.categoriaAtiva !== id;
+    estado.categoriaAtiva = id;
+    $$('.chip').forEach((c) => {
+      const ativa = c.dataset.alvo === id;
+      c.classList.toggle('ativo', ativa);
+      c.setAttribute('aria-selected', String(ativa));
+      if (ativa) {
+        const barra = $('#chips');
+        barra.scrollTo({ left: c.offsetLeft - barra.clientWidth / 2 + c.clientWidth / 2, behavior: 'smooth' });
+      }
+    });
+    $$('.categoria').forEach((sec) => (sec.hidden = sec.id !== id));
+
+    if (mudou && temGsap) {
+      const cards = $$(`#${id} .item:not([hidden])`).slice(0, 12);
+      gsap.fromTo(
+        cards,
+        { y: 24, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', stagger: 0.035, clearProps: 'transform,opacity' }
+      );
+      gsap.fromTo(`#${id} .categoria-topo`, { x: -12, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: 'power3.out' });
+    }
+
+    // Se a barra de abas já está grudada no topo, volta para o começo do setor
+    const caixa = $('#categorias');
+    const barra = $('#filtros');
+    const topo = caixa.getBoundingClientRect().top;
+    const alturaBarra = barra.getBoundingClientRect().height;
+    if (rolar && topo < alturaBarra) {
+      const y = topo + window.scrollY - alturaBarra - 4;
+      if (lenis) lenis.scrollTo(y, { duration: 0.8 });
+      else window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+    if (temGsap) ScrollTrigger.refresh();
   }
 
   function atualizarProgresso() {
@@ -749,50 +853,14 @@
 
   function aplicarFiltro() {
     let mudou = false;
-    $$('.categoria').forEach((sec) => {
-      let visiveis = 0;
-      $$('.item', sec).forEach((el) => {
-        const esconder = estado.soLivres && el.classList.contains('is-esgotado') && !el.classList.contains('is-meu');
-        if (el.hidden !== esconder) {
-          el.hidden = esconder;
-          mudou = true;
-        }
-        if (!esconder) visiveis++;
-      });
-      if (sec.hidden !== (visiveis === 0)) {
-        sec.hidden = visiveis === 0;
+    $$('.item').forEach((el) => {
+      const esconder = estado.soLivres && el.classList.contains('is-esgotado') && !el.classList.contains('is-meu');
+      if (el.hidden !== esconder) {
+        el.hidden = esconder;
         mudou = true;
       }
     });
     if (mudou && temGsap) ScrollTrigger.refresh();
-  }
-
-  function prepararEspiaoCategorias() {
-    const chips = $$('.chip');
-    chips.forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const alvo = document.getElementById(chip.dataset.alvo);
-        if (alvo && !alvo.hidden) irPara(alvo);
-      });
-    });
-    if (!temGsap) return;
-    $$('.categoria').forEach((sec) => {
-      gatilhosLista.push(ScrollTrigger.create({
-        trigger: sec,
-        start: 'top 140px',
-        end: 'bottom 140px',
-        onToggle: (st) => {
-          if (!st.isActive) return;
-          chips.forEach((c) => c.classList.toggle('ativo', c.dataset.alvo === sec.id));
-          const ativo = chips.find((c) => c.dataset.alvo === sec.id);
-          if (ativo) {
-            const barra = $('#chips');
-            const alvoX = ativo.offsetLeft - barra.clientWidth / 2 + ativo.clientWidth / 2;
-            barra.scrollTo({ left: alvoX, behavior: 'smooth' });
-          }
-        },
-      }));
-    });
   }
 
   function itemPorId(id) {
@@ -806,16 +874,33 @@
   function abrirReserva(id) {
     const item = itemPorId(id);
     if (!item) return;
-    if (livres(item) <= 0 && !item.meu) {
+    const restantes = livres(item);
+    if (restantes <= 0 && !item.meu) {
       abrirConflito();
       return;
     }
+    const escolheQtd = restantes > 1;
     abrirFolha({
       html: `
         <p class="folha-sobre">Reservar presente</p>
         <h3 id="folha-titulo">${escapar(item.nome)}</h3>
         ${item.piada ? `<p class="folha-piada">${escapar(item.piada)}</p>` : ''}
+        <p class="folha-lembrete">Lembrando: a lista é só uma sugestão. Se preferir, pode levar outra coisa.</p>
         <form id="form-reserva" novalidate>
+          ${
+            escolheQtd
+              ? `<div class="campo campo-qtd">
+            <span class="campo-rotulo">Quantas unidades você vai dar?</span>
+            <div class="contador contador-claro">
+              <button type="button" class="contador-btn" data-qtd="-1" aria-label="Menos uma unidade">−</button>
+              <output class="qtd-valor" aria-live="polite">1</output>
+              <button type="button" class="contador-btn" data-qtd="1" aria-label="Mais uma unidade">+</button>
+              <button type="button" class="qtd-todas" data-qtd-todas>Todas (${restantes})</button>
+            </div>
+            <span class="folha-nota">Faltam ${restantes} de ${item.quantidade}. Pode dar só uma parte, se preferir.</span>
+          </div>`
+              : ''
+          }
           <label class="campo">
             <span class="campo-rotulo">Quem vai dar?</span>
             <input type="text" name="nome" maxlength="60" autocomplete="name" placeholder="Seu nome" value="${escapar(nomeSalvo())}" required>
@@ -829,18 +914,45 @@
         </form>`,
       aoAbrir: (raiz) => {
         const form = $('#form-reserva', raiz);
-        const input = $('input', form);
+        const input = $('input[name="nome"]', form);
+        let qtd = 1;
+        if (escolheQtd) {
+          const saida = $('.qtd-valor', form);
+          const menos = $('[data-qtd="-1"]', form);
+          const mais = $('[data-qtd="1"]', form);
+          const todas = $('[data-qtd-todas]', form);
+          const atualizar = (animar) => {
+            saida.textContent = qtd;
+            menos.disabled = qtd <= 1;
+            mais.disabled = qtd >= restantes;
+            todas.classList.toggle('ativo', qtd === restantes);
+            if (animar && temGsap) gsap.fromTo(saida, { scale: 1.35 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+          };
+          menos.addEventListener('click', () => {
+            qtd = Math.max(1, qtd - 1);
+            atualizar(true);
+          });
+          mais.addEventListener('click', () => {
+            qtd = Math.min(restantes, qtd + 1);
+            atualizar(true);
+          });
+          todas.addEventListener('click', () => {
+            qtd = restantes;
+            atualizar(true);
+          });
+          atualizar(false);
+        }
         if (!input.value) setTimeout(() => input.focus(), 350);
         form.addEventListener('submit', (ev) => {
           ev.preventDefault();
-          confirmarReserva(item, form);
+          confirmarReserva(item, form, qtd);
         });
       },
     });
   }
 
-  async function confirmarReserva(item, form) {
-    const input = $('input', form);
+  async function confirmarReserva(item, form, qtd) {
+    const input = $('input[name="nome"]', form);
     const erro = $('.form-erro', form);
     const botao = $('button[type="submit"]', form);
     const nome = input.value.trim().replace(/\s+/g, ' ');
@@ -856,7 +968,7 @@
     botao.classList.add('carregando');
 
     try {
-      const dados = await API.reservar(item.id, nome);
+      const dados = await API.reservar(item.id, nome, qtd);
       await fecharFolha();
       estado.dados = dados;
       estado.ocupados.add(item.id);
@@ -865,13 +977,14 @@
       const el = document.querySelector(`.item[data-id="${CSS.escape(item.id)}"]`);
       await animarCarimbo(el, itemPorId(item.id) || item);
       renderizarLista();
-      const cat = chave(item.categoria);
+      const info = infoCategoria(chave(item.categoria));
+      const detalhe = qtd > 1 ? `${plural(qtd, 'unidade reservada', 'unidades reservadas')} no seu nome` : 'reserva feita no seu nome';
       abrirFolha({
         figurinha: 'assets/img/presente.webp',
         html: `
           <p class="folha-sobre">Reservado!</p>
-          <h3 id="folha-titulo">Vinícius agradece. ${escapar(AGRADECE[cat] || 'A casa também.')}</h3>
-          <p class="folha-texto">${escapar(item.nome)}: reserva feita no seu nome. Se mudar de ideia, dá para desfazer na própria lista.</p>
+          <h3 id="folha-titulo">Vinícius agradece. ${escapar(info.agradece)}</h3>
+          <p class="folha-texto">${escapar(item.nome)}: ${detalhe}. Se mudar de ideia, dá para desfazer na própria lista.</p>
           <div class="folha-botoes um"><button type="button" class="btn btn-coral" data-fechar>Fechar</button></div>`,
       });
     } catch (e) {
@@ -880,6 +993,11 @@
         await fecharFolha();
         abrirConflito();
         recarregar();
+      } else if (e.codigo === 'quantidade_indisponivel') {
+        await fecharFolha();
+        await recarregar();
+        toast(`${e.message} Ajusta a quantidade e tenta de novo.`);
+        abrirReserva(item.id);
       } else if (e.codigo === 'rede') {
         await fecharFolha();
         abrirErro(() => abrirReserva(item.id));
@@ -893,6 +1011,7 @@
     if (!el) return Promise.resolve();
     el.classList.add('is-meu');
     el.classList.toggle('is-esgotado', livres(item) <= 0);
+    $('.item-meu-texto', el).textContent = textoMeu(item);
     const carimbo = $('.carimbo', el);
     soltarConfete(el);
     if (!temGsap) return Promise.resolve();
@@ -1481,7 +1600,7 @@
     if (API.demo) {
       $('#demo-aviso').hidden = false;
       $('#demo-recomecar').addEventListener('click', () => {
-        ['luau.demo.v1', 'luau.codigo', 'luau.nome', 'luau.recado'].forEach((k) => API.guardar.apagar(k));
+        ['luau.demo.v1', 'luau.demo.v2', 'luau.codigo', 'luau.nome', 'luau.recado'].forEach((k) => API.guardar.apagar(k));
         location.reload();
       });
     }

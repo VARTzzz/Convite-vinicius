@@ -14,6 +14,7 @@ index.html                  página única do convite
 assets/css/style.css        visual (cores e fontes ficam nas variáveis do :root)
 assets/js/config.js         endereço da planilha (API_URL) e data padrão
 assets/js/api.js            conversa com a planilha e modo demonstração
+assets/js/lista-demo.js     cópia da lista usada só no modo demonstração
 assets/js/app.js            interface e animações
 assets/img/                 figurinhas do Vinícius, prévia do WhatsApp e ícones
 assets/vendor/              GSAP, ScrollTrigger, SplitText, Lenis e canvas-confetti

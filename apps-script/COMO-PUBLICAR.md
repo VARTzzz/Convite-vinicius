@@ -42,7 +42,7 @@ O URL continua o mesmo.
 | Aba | Quem mexe | Para quê |
 |---|---|---|
 | Resumo | Ninguém (é automática) | Totais de presença e de presentes |
-| Itens | Você | A lista. Pode adicionar, apagar e mudar itens, quantidades e piadas. A coluna ID se preenche sozinha para itens novos |
-| Reservas | O site | Quem reservou o quê. Para liberar um item, apague a linha ou troque a Situação para "cancelada" |
+| Itens | Você | A lista, por setor (cada setor vira uma aba no site). Pode adicionar, apagar e mudar itens, quantidades e piadas. A coluna ID se preenche sozinha para itens novos |
+| Reservas | O site | Quem reservou o quê e quantas unidades. Para liberar uma reserva, apague a linha ou troque a Situação para "cancelada" |
 | Confirmações | O site | Quem vai, quem não vai, acompanhantes e recados |
 | Configuração | Você | Endereço, bairro, cidade, data e nome do local (este só aparece para quem confirma presença) |
