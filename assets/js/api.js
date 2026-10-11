@@ -16,6 +16,9 @@
     gravar(chave, valor) {
       try { localStorage.setItem(chave, valor); } catch (_) { /* navegação privada */ }
     },
+    apagar(chave) {
+      try { localStorage.removeItem(chave); } catch (_) { /* navegação privada */ }
+    },
   };
 
   function novoCodigo() {

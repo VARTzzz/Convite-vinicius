@@ -1478,7 +1478,13 @@
   // Início
 
   async function iniciar() {
-    if (API.demo) $('#demo-aviso').hidden = false;
+    if (API.demo) {
+      $('#demo-aviso').hidden = false;
+      $('#demo-recomecar').addEventListener('click', () => {
+        ['luau.demo.v1', 'luau.codigo', 'luau.nome', 'luau.recado'].forEach((k) => API.guardar.apagar(k));
+        location.reload();
+      });
+    }
     iniciarRolagem();
     prepararVarais();
     iniciarAbertura();

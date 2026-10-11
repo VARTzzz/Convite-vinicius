@@ -252,7 +252,7 @@ html.lenis, html.lenis body { height: auto; }
 
 .demo-aviso {
   position: fixed;
-  top: calc(10px + env(safe-area-inset-top));
+  bottom: calc(92px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   z-index: 60;
@@ -264,6 +264,19 @@ html.lenis, html.lenis body { height: auto; }
   font-weight: 700;
   white-space: nowrap;
   box-shadow: var(--sombra);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.demo-aviso[hidden] { display: none; }
+.demo-aviso button {
+  padding: 3px 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--selva);
+  color: var(--areia);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 /* ==========================================================================
