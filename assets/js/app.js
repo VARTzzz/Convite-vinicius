@@ -559,15 +559,16 @@
     ['inicio', 'lista', 'confirmar'].forEach((id) => {
       const alvo = document.getElementById(id);
       if (!alvo) return;
-      const ultimo = id === 'confirmar';
+      const marcar = () => $$('.nav a').forEach((a) => a.classList.toggle('ativo', a.dataset.nav === id));
       ScrollTrigger.create({
         trigger: alvo,
         start: 'top 55%',
-        // a última seção vale até o fim da página (o rodapé fica dentro dela)
-        end: ultimo ? 'max' : 'bottom 55%',
+        end: 'bottom 55%',
         onToggle: (st) => {
-          if (st.isActive) $$('.nav a').forEach((a) => a.classList.toggle('ativo', a.dataset.nav === id));
+          if (st.isActive) marcar();
         },
+        // a última seção continua marcada no rodapé, até o fim da página
+        onLeave: id === 'confirmar' ? marcar : undefined,
       });
     });
 
