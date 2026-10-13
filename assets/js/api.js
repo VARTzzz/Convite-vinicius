@@ -119,14 +119,10 @@
       const reservados = Math.min(quantidade, (s.outros[id] || 0) + minhaQuantidade);
       return { id, categoria, nome, piada, quantidade, reservados, meu: minhaQuantidade > 0, minhaQuantidade };
     });
-    const confirmados = s.confirmados.slice();
-    if (s.eu && s.eu.vai) confirmados.push({ nome: s.eu.nome, acompanhantes: s.eu.acompanhantes });
     return {
       ok: true,
       evento: { data: cfg.DATA_PADRAO, endereco: 'Rua do Exemplo, 123', bairro: 'Bairro Exemplo', cidade: 'Sua Cidade' },
       itens,
-      confirmados,
-      totalPessoas: confirmados.reduce((t, c) => t + 1 + c.acompanhantes, 0),
       eu: { confirmacao: s.eu },
       local: s.eu && s.eu.vai
         ? {

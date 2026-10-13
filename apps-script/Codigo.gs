@@ -365,7 +365,6 @@ function montarResposta_(dados, codigo) {
     minhaQuantidade: minhas[i.id] || 0,
   }));
 
-  const vao = dados.confirmacoes.filter((c) => c.vai);
   const minha = codigo ? dados.confirmacoes.find((c) => c.codigo === codigo) : null;
   const cfg = dados.config;
 
@@ -379,8 +378,6 @@ function montarResposta_(dados, codigo) {
   const resposta = {
     evento: evento,
     itens: itens,
-    confirmados: vao.map((c) => ({ nome: c.nome, acompanhantes: c.acompanhantes })),
-    totalPessoas: vao.reduce((soma, c) => soma + 1 + c.acompanhantes, 0),
     eu: {
       confirmacao: minha ? { nome: minha.nome, vai: minha.vai, acompanhantes: minha.acompanhantes } : null,
     },

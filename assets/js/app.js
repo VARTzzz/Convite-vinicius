@@ -556,13 +556,15 @@
       onEnter: () => nav.classList.add('visivel'),
       onLeaveBack: () => nav.classList.remove('visivel'),
     });
-    ['inicio', 'lista', 'confirmar', 'quem'].forEach((id) => {
+    ['inicio', 'lista', 'confirmar'].forEach((id) => {
       const alvo = document.getElementById(id);
       if (!alvo) return;
+      const ultimo = id === 'confirmar';
       ScrollTrigger.create({
         trigger: alvo,
         start: 'top 55%',
-        end: 'bottom 55%',
+        // a última seção vale até o fim da página (o rodapé fica dentro dela)
+        end: ultimo ? 'max' : 'bottom 55%',
         onToggle: (st) => {
           if (st.isActive) $$('.nav a').forEach((a) => a.classList.toggle('ativo', a.dataset.nav === id));
         },
@@ -1409,55 +1411,6 @@
   }
 
   // ------------------------------------------------------------------------
-  // Quem vai
-
-  function renderizarNomes() {
-    const d = estado.dados;
-    const lista = $('#nomes');
-    const confirmados = (d && d.confirmados) || [];
-    const total = (d && d.totalPessoas) || 0;
-    const meu = d && d.eu && d.eu.confirmacao && d.eu.confirmacao.vai ? chave(d.eu.confirmacao.nome) : null;
-
-    $('#quem-total').textContent = confirmados.length
-      ? `${plural(total, 'pessoa', 'pessoas')} no luau até agora, contando acompanhantes.`
-      : '';
-
-    if (!confirmados.length) {
-      lista.innerHTML = '<li class="nomes-vazio">Ninguém confirmou ainda. Seja a primeira pessoa e ganhe… nada. Mas com estilo.</li>';
-      return;
-    }
-
-    const html = confirmados
-      .map((c) => {
-        const n = String(c.nome || '').trim();
-        let h = 0;
-        for (let i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) % 360;
-        const inicial = n.charAt(0).toUpperCase();
-        const eu = meu && chave(n) === meu ? ' eu' : '';
-        return `<li class="nome${eu}"><span class="avatar" style="--h:${h}">${escapar(inicial)}</span>${escapar(n)}${
-          c.acompanhantes ? `<span class="mais">+${c.acompanhantes}</span>` : ''
-        }</li>`;
-      })
-      .join('');
-    if (lista.dataset.html === html) return;
-    const primeiraVez = !lista.dataset.html;
-    lista.dataset.html = html;
-    lista.innerHTML = html;
-    if (temGsap) {
-      const alvos = $$('.nome', lista);
-      if (primeiraVez) {
-        gsap.set(alvos, { opacity: 0, y: 16, scale: 0.9 });
-        ScrollTrigger.create({
-          trigger: lista,
-          start: 'top 90%',
-          once: true,
-          onEnter: () => gsap.to(alvos, { opacity: 1, y: 0, scale: 1, duration: 0.6, stagger: 0.04, ease: 'back.out(1.8)' }),
-        });
-      }
-    }
-  }
-
-  // ------------------------------------------------------------------------
   // Janela inferior
 
   const folha = $('#folha');
@@ -1557,7 +1510,6 @@
     atualizarContagem();
     renderizarLista();
     if (!estado.editandoRsvp) renderizarRsvp(!!o.animarRsvp);
-    renderizarNomes();
   }
 
   let carregando = null;
